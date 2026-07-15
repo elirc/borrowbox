@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.idea/
+TestResults/
+*.db
+*.db-shm
+*.db-wal
+*.user
+.env
+BUG-LEDGER.local.md

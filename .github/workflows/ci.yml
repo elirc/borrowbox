@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - run: dotnet restore BorrowBox.slnx --locked-mode
+      - run: dotnet format BorrowBox.slnx --verify-no-changes --no-restore
+      - run: dotnet build BorrowBox.slnx --configuration Release --no-restore
+      - run: dotnet test BorrowBox.slnx --configuration Release --no-build
+      - run: dotnet list BorrowBox.slnx package --vulnerable --include-transitive

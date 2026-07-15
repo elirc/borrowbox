@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BorrowBox.Api/BorrowBox.Api.csproj" />
+    <Project Path="src/BorrowBox.Core/BorrowBox.Core.csproj" />
+    <Project Path="src/BorrowBox.Infrastructure/BorrowBox.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BorrowBox.Api.Tests/BorrowBox.Api.Tests.csproj" />
+    <Project Path="tests/BorrowBox.Core.Tests/BorrowBox.Core.Tests.csproj" />
+    <Project Path="tests/BorrowBox.Infrastructure.Tests/BorrowBox.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>
