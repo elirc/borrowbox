@@ -5,12 +5,14 @@ using BorrowBox.Api.Loans;
 using BorrowBox.Api.Inspections;
 using BorrowBox.Api.Reservations;
 using BorrowBox.Api.Security;
+using BorrowBox.Api.Reporting;
 using Microsoft.AspNetCore.Authentication;
 using BorrowBox.Core.Borrowers;
 using BorrowBox.Core.Equipment;
 using BorrowBox.Core.Loans;
 using BorrowBox.Core.Inspections;
 using BorrowBox.Core.Reservations;
+using BorrowBox.Core.Reporting;
 using BorrowBox.Infrastructure.Borrowers;
 using BorrowBox.Infrastructure.Equipment;
 using BorrowBox.Infrastructure.Loans;
@@ -39,6 +41,7 @@ builder.Services.AddScoped<ReturnService>();
 builder.Services.AddScoped<InspectionService>();
 builder.Services.AddScoped<ReservationService>();
 builder.Services.AddScoped<ReservationExpiryService>();
+builder.Services.AddScoped<InventoryReportService>();
 builder.Services.AddHostedService<ReservationExpiryWorker>();
 
 var app = builder.Build();
@@ -53,6 +56,7 @@ app.MapBorrowerEndpoints();
 app.MapLoanEndpoints();
 app.MapInspectionEndpoints();
 app.MapReservationEndpoints();
+app.MapReportingEndpoints();
 
 app.Run();
 
