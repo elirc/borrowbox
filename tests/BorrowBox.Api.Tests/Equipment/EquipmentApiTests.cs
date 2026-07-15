@@ -10,8 +10,11 @@ public sealed class EquipmentApiTests : IClassFixture<WebApplicationFactory<Prog
 {
     private readonly HttpClient _client;
 
-    public EquipmentApiTests(WebApplicationFactory<Program> factory) =>
+    public EquipmentApiTests(WebApplicationFactory<Program> factory)
+    {
         _client = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Testing")).CreateClient();
+        _client.DefaultRequestHeaders.Add("X-Demo-Role", "Staff");
+    }
 
     [Fact]
     public async Task CreateThenGet_ReturnsEquipment()

@@ -1,4 +1,5 @@
 using BorrowBox.Core.Equipment;
+using BorrowBox.Api.Security;
 
 namespace BorrowBox.Api.Equipment;
 
@@ -16,7 +17,7 @@ public static class EquipmentEndpoints
         {
             var item = await service.CreateAsync(request.AssetTag, request.Name, request.Category, cancellationToken);
             return Results.Created($"/api/v1/equipment/{item.Id}", Map(item));
-        });
+        }).RequireAuthorization(BorrowBoxSecurity.StaffPolicy);
         group.MapGet("/", async (string? query, string? category, int? page, int? pageSize, EquipmentService service, CancellationToken cancellationToken) =>
         {
             var result = await service.SearchAsync(query, category, page ?? 1, pageSize ?? 20, cancellationToken);
@@ -31,9 +32,10 @@ public static class EquipmentEndpoints
         {
             var item = await service.UpdateAsync(id, request.Name, request.Category, cancellationToken);
             return item is null ? Results.NotFound() : Results.Ok(Map(item));
-        });
+        }).RequireAuthorization(BorrowBoxSecurity.StaffPolicy);
         group.MapDelete("/{id:guid}", async (Guid id, EquipmentService service, CancellationToken cancellationToken) =>
-            await service.RetireAsync(id, cancellationToken) ? Results.NoContent() : Results.NotFound());
+            await service.RetireAsync(id, cancellationToken) ? Results.NoContent() : Results.NotFound())
+            .RequireAuthorization(BorrowBoxSecurity.StaffPolicy);
         return endpoints;
     }
 
