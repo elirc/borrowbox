@@ -3,6 +3,7 @@ using BorrowBox.Core.Equipment;
 namespace BorrowBox.Api.Equipment;
 
 public sealed record CreateEquipmentRequest(string AssetTag, string Name, string Category);
+public sealed record UpdateEquipmentRequest(string Name, string Category);
 public sealed record EquipmentResponse(Guid Id, string AssetTag, string Name, string Category, string Status);
 
 public static class EquipmentEndpoints
@@ -20,6 +21,13 @@ public static class EquipmentEndpoints
             var item = await service.GetAsync(id, cancellationToken);
             return item is null ? Results.NotFound() : Results.Ok(Map(item));
         });
+        group.MapPut("/{id:guid}", async (Guid id, UpdateEquipmentRequest request, EquipmentService service, CancellationToken cancellationToken) =>
+        {
+            var item = await service.UpdateAsync(id, request.Name, request.Category, cancellationToken);
+            return item is null ? Results.NotFound() : Results.Ok(Map(item));
+        });
+        group.MapDelete("/{id:guid}", async (Guid id, EquipmentService service, CancellationToken cancellationToken) =>
+            await service.RetireAsync(id, cancellationToken) ? Results.NoContent() : Results.NotFound());
         return endpoints;
     }
 
