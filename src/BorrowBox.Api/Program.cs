@@ -23,6 +23,7 @@ builder.Services.AddExceptionHandler<BorrowBoxExceptionHandler>();
 builder.Services.AddSingleton<IEquipmentStore, InMemoryEquipmentStore>();
 builder.Services.AddSingleton<IBorrowerStore, InMemoryBorrowerStore>();
 builder.Services.AddSingleton<ILoanStore, InMemoryLoanStore>();
+builder.Services.AddSingleton(new BorrowerLoanPolicy(maximumActiveLoans: 3));
 builder.Services.AddSingleton<IInspectionStore, InMemoryInspectionStore>();
 builder.Services.AddSingleton<IReservationStore, InMemoryReservationStore>();
 builder.Services.AddScoped<EquipmentService>();
