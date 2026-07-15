@@ -27,7 +27,11 @@ public sealed class Loan
     public DateTimeOffset? ReturnedAt { get; private set; }
     public bool IsActive => ReturnedAt is null;
 
-    public void Return(DateTimeOffset returnedAt) => ReturnedAt = returnedAt.ToUniversalTime();
+    public void Return(DateTimeOffset returnedAt)
+    {
+        if (!IsActive) throw new BorrowBoxException("loan.already_returned", "Loan has already been returned.");
+        ReturnedAt = returnedAt.ToUniversalTime();
+    }
 }
 
 public interface ILoanStore
@@ -58,7 +62,7 @@ public sealed class CheckoutService(
 {
     public async Task<Loan> CheckOutAsync(Guid equipmentId, Guid borrowerId, DateOnly dueOn, CancellationToken cancellationToken)
     {
-        var equipment = await equipmentStore.GetAsync(equipmentId, cancellationToken).ConfigureAwait(false)
+        _ = await equipmentStore.GetAsync(equipmentId, cancellationToken).ConfigureAwait(false)
             ?? throw new BorrowBoxException("equipment.not_found", "Equipment was not found.");
         var borrower = await borrowerStore.GetAsync(borrowerId, cancellationToken).ConfigureAwait(false)
             ?? throw new BorrowBoxException("borrower.not_found", "Borrower was not found.");
@@ -66,8 +70,8 @@ public sealed class CheckoutService(
         var activeLoans = await loanStore.ListActiveByBorrowerAsync(borrower.Id, cancellationToken).ConfigureAwait(false);
         policy.EnsureCanBorrow(activeLoans.Count);
 
-        equipment.CheckOut();
-        await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);
+        var equipment = await equipmentStore.TryCheckOutAsync(equipmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new BorrowBoxException("equipment.not_available", "Equipment is not available.");
         var loan = new Loan(Guid.NewGuid(), equipment.Id, borrower.Id, DateTimeOffset.UtcNow, dueOn);
         await loanStore.AddAsync(loan, cancellationToken).ConfigureAwait(false);
         return loan;

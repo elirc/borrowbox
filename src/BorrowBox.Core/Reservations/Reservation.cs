@@ -110,8 +110,7 @@ public sealed class ReservationExpiryService(
 {
     public async Task<int> ExpireDueAsync(CancellationToken cancellationToken)
     {
-        // Counterexample: the injected UTC clock is not yet used.
-        var now = DateTimeOffset.Now;
+        var now = clock.UtcNow;
         var reservations = await reservationStore.ListAsync(cancellationToken).ConfigureAwait(false);
         var expiredCount = 0;
 

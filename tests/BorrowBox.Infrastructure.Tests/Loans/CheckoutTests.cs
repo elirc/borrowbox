@@ -133,6 +133,7 @@ public sealed class CheckoutTests
     {
         private readonly TaskCompletionSource _bothReading = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _readers;
+        private int _checkoutWon;
 
         public Task AddAsync(EquipmentItem item, CancellationToken cancellationToken) => Task.CompletedTask;
         public async Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken)
@@ -144,5 +145,12 @@ public sealed class CheckoutTests
         public Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken cancellationToken) =>
             Task.FromResult<IReadOnlyCollection<EquipmentItem>>([source]);
         public Task SaveAsync(EquipmentItem item, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<EquipmentItem?> TryCheckOutAsync(Guid id, CancellationToken cancellationToken)
+        {
+            if (Interlocked.Exchange(ref _checkoutWon, 1) == 1) return Task.FromResult<EquipmentItem?>(null);
+            var checkedOut = new EquipmentItem(source.Id, source.AssetTag, source.Name, source.Category);
+            checkedOut.CheckOut();
+            return Task.FromResult<EquipmentItem?>(checkedOut);
+        }
     }
 }

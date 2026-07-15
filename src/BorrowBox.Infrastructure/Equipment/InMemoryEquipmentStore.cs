@@ -33,4 +33,16 @@ public sealed class InMemoryEquipmentStore : IEquipmentStore
         _items[item.Id] = item;
         return Task.CompletedTask;
     }
+
+    public Task<EquipmentItem?> TryCheckOutAsync(Guid id, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!_items.TryGetValue(id, out var item)) return Task.FromResult<EquipmentItem?>(null);
+        lock (item)
+        {
+            if (item.Status != EquipmentStatus.Available) return Task.FromResult<EquipmentItem?>(null);
+            item.CheckOut();
+            return Task.FromResult<EquipmentItem?>(item);
+        }
+    }
 }
