@@ -38,6 +38,12 @@ public sealed class EquipmentItem
         if (Status != EquipmentStatus.Available) throw new BorrowBoxException("equipment.retire_unavailable", "Only available equipment can be retired.");
         Status = EquipmentStatus.Retired;
     }
+
+    public void CheckOut()
+    {
+        if (Status != EquipmentStatus.Available) throw new BorrowBoxException("equipment.not_available", "Equipment is not available.");
+        Status = EquipmentStatus.CheckedOut;
+    }
 }
 
 public interface IEquipmentStore
