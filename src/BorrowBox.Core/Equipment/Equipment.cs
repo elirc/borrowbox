@@ -6,7 +6,7 @@ public enum EquipmentStatus { Available, CheckedOut, Reserved, Inspection, Retir
 
 public sealed class EquipmentItem
 {
-    public EquipmentItem(Guid id, string assetTag, string name, string category)
+    public EquipmentItem(Guid id, string assetTag, string name, string category, EquipmentStatus status = EquipmentStatus.Available)
     {
         if (id == Guid.Empty) throw new BorrowBoxException("equipment.id_required", "Equipment ID is required.");
         if (string.IsNullOrWhiteSpace(assetTag)) throw new BorrowBoxException("equipment.asset_tag_required", "Asset tag is required.");
@@ -16,13 +16,14 @@ public sealed class EquipmentItem
         AssetTag = assetTag.Trim().ToUpperInvariant();
         Name = name.Trim();
         Category = category.Trim();
+        Status = status;
     }
 
     public Guid Id { get; }
     public string AssetTag { get; }
     public string Name { get; private set; }
     public string Category { get; private set; }
-    public EquipmentStatus Status { get; private set; } = EquipmentStatus.Available;
+    public EquipmentStatus Status { get; private set; }
 
     public void UpdateDetails(string name, string category)
     {
@@ -53,6 +54,7 @@ public interface IEquipmentStore
     Task AddAsync(EquipmentItem item, CancellationToken cancellationToken);
     Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken cancellationToken);
+    Task SaveAsync(EquipmentItem item, CancellationToken cancellationToken);
 }
 
 public sealed record EquipmentPage(IReadOnlyCollection<EquipmentItem> Items, int Page, int PageSize, int Total);
@@ -84,6 +86,7 @@ public sealed class EquipmentService(IEquipmentStore store)
     {
         var item = await store.GetAsync(id, cancellationToken).ConfigureAwait(false);
         item?.UpdateDetails(name, category);
+        if (item is not null) await store.SaveAsync(item, cancellationToken).ConfigureAwait(false);
         return item;
     }
 
@@ -92,6 +95,7 @@ public sealed class EquipmentService(IEquipmentStore store)
         var item = await store.GetAsync(id, cancellationToken).ConfigureAwait(false);
         if (item is null) return false;
         item.Retire();
+        await store.SaveAsync(item, cancellationToken).ConfigureAwait(false);
         return true;
     }
 }

@@ -26,4 +26,11 @@ public sealed class InMemoryEquipmentStore : IEquipmentStore
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult<IReadOnlyCollection<EquipmentItem>>(_items.Values.ToArray());
     }
+
+    public Task SaveAsync(EquipmentItem item, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _items[item.Id] = item;
+        return Task.CompletedTask;
+    }
 }

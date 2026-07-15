@@ -47,6 +47,7 @@ public sealed class CheckoutService(IEquipmentStore equipmentStore, IBorrowerSto
         if (!borrower.IsActive) throw new BorrowBoxException("borrower.inactive", "Borrower is inactive.");
 
         equipment.CheckOut();
+        await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);
         var loan = new Loan(Guid.NewGuid(), equipment.Id, borrower.Id, DateTimeOffset.UtcNow, dueOn);
         await loanStore.AddAsync(loan, cancellationToken).ConfigureAwait(false);
         return loan;
@@ -63,6 +64,7 @@ public sealed class ReturnService(IEquipmentStore equipmentStore, ILoanStore loa
             ?? throw new BorrowBoxException("equipment.not_found", "Equipment was not found.");
         loan.Return(returnedAt);
         equipment.Return();
+        await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);
         return loan;
     }
 }
