@@ -44,7 +44,10 @@ public interface IEquipmentStore
 {
     Task AddAsync(EquipmentItem item, CancellationToken cancellationToken);
     Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken cancellationToken);
 }
+
+public sealed record EquipmentPage(IReadOnlyCollection<EquipmentItem> Items, int Page, int PageSize, int Total);
 
 public sealed class EquipmentService(IEquipmentStore store)
 {
@@ -56,6 +59,18 @@ public sealed class EquipmentService(IEquipmentStore store)
     }
 
     public Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken) => store.GetAsync(id, cancellationToken);
+
+    public async Task<EquipmentPage> SearchAsync(string? query, string? category, int page, int pageSize, CancellationToken cancellationToken)
+    {
+        if (page < 1 || pageSize is < 1 or > 50) throw new BorrowBoxException("equipment.page_invalid", "Page must be positive and page size must be 1 to 50.");
+        var items = await store.ListAsync(cancellationToken).ConfigureAwait(false);
+        var filtered = items.Where(item =>
+            (string.IsNullOrWhiteSpace(query) || item.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || item.AssetTag.Contains(query, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(category) || item.Category.Equals(category, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(item => item.AssetTag)
+            .ToArray();
+        return new EquipmentPage(filtered.Skip((page - 1) * pageSize).Take(pageSize).ToArray(), page, pageSize, filtered.Length);
+    }
 
     public async Task<EquipmentItem?> UpdateAsync(Guid id, string name, string category, CancellationToken cancellationToken)
     {

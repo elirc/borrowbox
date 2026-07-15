@@ -5,6 +5,7 @@ namespace BorrowBox.Api.Equipment;
 public sealed record CreateEquipmentRequest(string AssetTag, string Name, string Category);
 public sealed record UpdateEquipmentRequest(string Name, string Category);
 public sealed record EquipmentResponse(Guid Id, string AssetTag, string Name, string Category, string Status);
+public sealed record EquipmentPageResponse(IReadOnlyCollection<EquipmentResponse> Items, int Page, int PageSize, int Total);
 
 public static class EquipmentEndpoints
 {
@@ -15,6 +16,11 @@ public static class EquipmentEndpoints
         {
             var item = await service.CreateAsync(request.AssetTag, request.Name, request.Category, cancellationToken);
             return Results.Created($"/api/v1/equipment/{item.Id}", Map(item));
+        });
+        group.MapGet("/", async (string? query, string? category, int? page, int? pageSize, EquipmentService service, CancellationToken cancellationToken) =>
+        {
+            var result = await service.SearchAsync(query, category, page ?? 1, pageSize ?? 20, cancellationToken);
+            return Results.Ok(new EquipmentPageResponse(result.Items.Select(Map).ToArray(), result.Page, result.PageSize, result.Total));
         });
         group.MapGet("/{id:guid}", async (Guid id, EquipmentService service, CancellationToken cancellationToken) =>
         {

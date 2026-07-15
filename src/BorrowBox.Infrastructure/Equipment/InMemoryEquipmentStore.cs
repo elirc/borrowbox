@@ -20,4 +20,10 @@ public sealed class InMemoryEquipmentStore : IEquipmentStore
         _items.TryGetValue(id, out var item);
         return Task.FromResult(item);
     }
+
+    public Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyCollection<EquipmentItem>>(_items.Values.ToArray());
+    }
 }
