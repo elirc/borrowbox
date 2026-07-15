@@ -34,9 +34,27 @@ public interface ILoanStore
 {
     Task AddAsync(Loan loan, CancellationToken cancellationToken);
     Task<Loan?> GetAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Loan>> ListActiveByBorrowerAsync(Guid borrowerId, CancellationToken cancellationToken);
 }
 
-public sealed class CheckoutService(IEquipmentStore equipmentStore, IBorrowerStore borrowerStore, ILoanStore loanStore)
+public sealed class BorrowerLoanPolicy(int maximumActiveLoans)
+{
+    public int MaximumActiveLoans { get; } = maximumActiveLoans > 0
+        ? maximumActiveLoans
+        : throw new ArgumentOutOfRangeException(nameof(maximumActiveLoans));
+
+    public void EnsureCanBorrow(int activeLoanCount)
+    {
+        if (activeLoanCount >= MaximumActiveLoans)
+            throw new BorrowBoxException("borrower.loan_limit", $"Borrower may have at most {MaximumActiveLoans} active loans.");
+    }
+}
+
+public sealed class CheckoutService(
+    IEquipmentStore equipmentStore,
+    IBorrowerStore borrowerStore,
+    ILoanStore loanStore,
+    BorrowerLoanPolicy policy)
 {
     public async Task<Loan> CheckOutAsync(Guid equipmentId, Guid borrowerId, DateOnly dueOn, CancellationToken cancellationToken)
     {
@@ -45,6 +63,8 @@ public sealed class CheckoutService(IEquipmentStore equipmentStore, IBorrowerSto
         var borrower = await borrowerStore.GetAsync(borrowerId, cancellationToken).ConfigureAwait(false)
             ?? throw new BorrowBoxException("borrower.not_found", "Borrower was not found.");
         if (!borrower.IsActive) throw new BorrowBoxException("borrower.inactive", "Borrower is inactive.");
+        var activeLoans = await loanStore.ListActiveByBorrowerAsync(borrower.Id, cancellationToken).ConfigureAwait(false);
+        policy.EnsureCanBorrow(activeLoans.Count);
 
         equipment.CheckOut();
         await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);

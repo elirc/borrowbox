@@ -20,4 +20,11 @@ public sealed class InMemoryLoanStore : ILoanStore
         _loans.TryGetValue(id, out var loan);
         return Task.FromResult(loan);
     }
+
+    public Task<IReadOnlyCollection<Loan>> ListActiveByBorrowerAsync(Guid borrowerId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyCollection<Loan>>(
+            _loans.Values.Where(loan => loan.BorrowerId == borrowerId && loan.IsActive).ToArray());
+    }
 }
