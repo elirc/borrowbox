@@ -4,6 +4,8 @@ using BorrowBox.Api.Errors;
 using BorrowBox.Api.Loans;
 using BorrowBox.Api.Inspections;
 using BorrowBox.Api.Reservations;
+using BorrowBox.Api.Security;
+using Microsoft.AspNetCore.Authentication;
 using BorrowBox.Core.Borrowers;
 using BorrowBox.Core.Equipment;
 using BorrowBox.Core.Loans;
@@ -20,6 +22,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<BorrowBoxExceptionHandler>();
+builder.Services.AddAuthentication(BorrowBoxSecurity.Scheme)
+    .AddScheme<AuthenticationSchemeOptions, DemoHeaderAuthenticationHandler>(BorrowBoxSecurity.Scheme, _ => { });
+builder.Services.AddAuthorization(options =>
+    options.AddPolicy(BorrowBoxSecurity.StaffPolicy, policy => policy.RequireRole("Staff")));
 builder.Services.AddSingleton<IEquipmentStore, InMemoryEquipmentStore>();
 builder.Services.AddSingleton<IBorrowerStore, InMemoryBorrowerStore>();
 builder.Services.AddSingleton<ILoanStore, InMemoryLoanStore>();
@@ -38,6 +44,8 @@ builder.Services.AddHostedService<ReservationExpiryWorker>();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing")) app.MapOpenApi();
 app.MapGet("/health/live", () => Results.Ok(new { status = "healthy" }));
 app.MapEquipmentEndpoints();

@@ -14,12 +14,12 @@ public static class LoanEndpoints
             var loan = await service.CheckOutAsync(request.EquipmentId, request.BorrowerId, request.DueOn, cancellationToken);
             return Results.Created($"/api/v1/loans/{loan.Id}", new LoanResponse(
                 loan.Id, loan.EquipmentId, loan.BorrowerId, loan.CheckedOutAt, loan.DueOn, loan.IsActive));
-        }).WithTags("Loans");
+        }).WithTags("Loans").RequireAuthorization();
         endpoints.MapPost("/api/v1/loans/{id:guid}/return", async (Guid id, ReturnService service, CancellationToken cancellationToken) =>
         {
             var loan = await service.ReturnAsync(id, DateTimeOffset.UtcNow, cancellationToken);
             return Results.Ok(new LoanResponse(loan.Id, loan.EquipmentId, loan.BorrowerId, loan.CheckedOutAt, loan.DueOn, loan.IsActive));
-        }).WithTags("Loans");
+        }).WithTags("Loans").RequireAuthorization();
         return endpoints;
     }
 }

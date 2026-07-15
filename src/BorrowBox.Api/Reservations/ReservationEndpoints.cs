@@ -13,9 +13,10 @@ public static class ReservationEndpoints
         {
             var reservation = await service.ReserveAsync(request.EquipmentId, request.BorrowerId, request.ExpiresAt, cancellationToken);
             return Results.Created($"/api/v1/reservations/{reservation.Id}", ToResponse(reservation));
-        }).WithTags("Reservations");
+        }).WithTags("Reservations").RequireAuthorization();
         endpoints.MapPost("/api/v1/reservations/{id:guid}/cancel", async (Guid id, ReservationService service, CancellationToken cancellationToken) =>
-            Results.Ok(ToResponse(await service.CancelAsync(id, cancellationToken)))).WithTags("Reservations");
+            Results.Ok(ToResponse(await service.CancelAsync(id, cancellationToken))))
+            .WithTags("Reservations").RequireAuthorization();
         return endpoints;
     }
 
