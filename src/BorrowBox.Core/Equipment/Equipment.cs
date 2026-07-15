@@ -65,6 +65,24 @@ public sealed class EquipmentItem
     }
 
     public void Return() => Status = EquipmentStatus.Available;
+
+    public void MarkForInspection()
+    {
+        if (Status == EquipmentStatus.Retired) throw new BorrowBoxException("equipment.retired", "Retired equipment cannot be inspected.");
+        Status = EquipmentStatus.Inspection;
+    }
+
+    public void PassInspection()
+    {
+        if (Status != EquipmentStatus.Inspection) throw new BorrowBoxException("equipment.not_in_inspection", "Equipment is not being inspected.");
+        Status = EquipmentStatus.Available;
+    }
+
+    public void RetireAfterInspection()
+    {
+        if (Status != EquipmentStatus.Inspection) throw new BorrowBoxException("equipment.not_in_inspection", "Equipment is not being inspected.");
+        Status = EquipmentStatus.Retired;
+    }
 }
 
 public interface IEquipmentStore
