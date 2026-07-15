@@ -26,6 +26,8 @@ builder.Services.AddScoped<BorrowerService>();
 builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddScoped<ReturnService>();
 builder.Services.AddScoped<ReservationService>();
+builder.Services.AddScoped<ReservationExpiryService>();
+builder.Services.AddHostedService<ReservationExpiryWorker>();
 
 var app = builder.Build();
 

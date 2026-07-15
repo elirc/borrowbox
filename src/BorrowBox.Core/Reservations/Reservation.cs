@@ -102,3 +102,29 @@ public sealed class ReservationService(
         await equipmentStore.GetAsync(reservation.EquipmentId, cancellationToken).ConfigureAwait(false)
             ?? throw new BorrowBoxException("equipment.not_found", "Equipment was not found.");
 }
+
+public sealed class ReservationExpiryService(
+    IReservationStore reservationStore,
+    IEquipmentStore equipmentStore)
+{
+    public async Task<int> ExpireDueAsync(CancellationToken cancellationToken)
+    {
+        // Sprint 9 keeps time access simple. Sprint 14 will make this deterministic.
+        var now = DateTimeOffset.Now;
+        var reservations = await reservationStore.ListAsync(cancellationToken).ConfigureAwait(false);
+        var expiredCount = 0;
+
+        foreach (var reservation in reservations.Where(item =>
+                     item.Status == ReservationStatus.Active && item.ExpiresAt <= now))
+        {
+            var equipment = await equipmentStore.GetAsync(reservation.EquipmentId, cancellationToken).ConfigureAwait(false);
+            if (equipment is null) continue;
+            reservation.Expire();
+            equipment.ReleaseReservation();
+            await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);
+            expiredCount++;
+        }
+
+        return expiredCount;
+    }
+}
