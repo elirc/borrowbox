@@ -1,5 +1,5 @@
-using BorrowBox.Core.Equipment;
 using BorrowBox.Core.Common;
+using BorrowBox.Core.Equipment;
 using BorrowBox.Core.Reservations;
 using BorrowBox.Infrastructure.Equipment;
 using BorrowBox.Infrastructure.Reservations;

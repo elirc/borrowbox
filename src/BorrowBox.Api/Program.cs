@@ -1,23 +1,23 @@
 using BorrowBox.Api.Borrowers;
 using BorrowBox.Api.Equipment;
 using BorrowBox.Api.Errors;
-using BorrowBox.Api.Loans;
 using BorrowBox.Api.Inspections;
+using BorrowBox.Api.Loans;
+using BorrowBox.Api.Reporting;
 using BorrowBox.Api.Reservations;
 using BorrowBox.Api.Security;
-using BorrowBox.Api.Reporting;
-using Microsoft.AspNetCore.Authentication;
 using BorrowBox.Core.Borrowers;
 using BorrowBox.Core.Equipment;
-using BorrowBox.Core.Loans;
 using BorrowBox.Core.Inspections;
-using BorrowBox.Core.Reservations;
+using BorrowBox.Core.Loans;
 using BorrowBox.Core.Reporting;
+using BorrowBox.Core.Reservations;
 using BorrowBox.Infrastructure.Borrowers;
 using BorrowBox.Infrastructure.Equipment;
-using BorrowBox.Infrastructure.Loans;
 using BorrowBox.Infrastructure.Inspections;
+using BorrowBox.Infrastructure.Loans;
 using BorrowBox.Infrastructure.Reservations;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
