@@ -23,6 +23,21 @@ public sealed class EquipmentItem
     public string Name { get; private set; }
     public string Category { get; private set; }
     public EquipmentStatus Status { get; private set; } = EquipmentStatus.Available;
+
+    public void UpdateDetails(string name, string category)
+    {
+        if (Status == EquipmentStatus.Retired) throw new BorrowBoxException("equipment.retired", "Retired equipment cannot change.");
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category))
+            throw new BorrowBoxException("equipment.details_required", "Name and category are required.");
+        Name = name.Trim();
+        Category = category.Trim();
+    }
+
+    public void Retire()
+    {
+        if (Status != EquipmentStatus.Available) throw new BorrowBoxException("equipment.retire_unavailable", "Only available equipment can be retired.");
+        Status = EquipmentStatus.Retired;
+    }
 }
 
 public interface IEquipmentStore
@@ -41,4 +56,19 @@ public sealed class EquipmentService(IEquipmentStore store)
     }
 
     public Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken) => store.GetAsync(id, cancellationToken);
+
+    public async Task<EquipmentItem?> UpdateAsync(Guid id, string name, string category, CancellationToken cancellationToken)
+    {
+        var item = await store.GetAsync(id, cancellationToken).ConfigureAwait(false);
+        item?.UpdateDetails(name, category);
+        return item;
+    }
+
+    public async Task<bool> RetireAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var item = await store.GetAsync(id, cancellationToken).ConfigureAwait(false);
+        if (item is null) return false;
+        item.Retire();
+        return true;
+    }
 }
