@@ -20,6 +20,7 @@ builder.Services.AddSingleton<ILoanStore, InMemoryLoanStore>();
 builder.Services.AddScoped<EquipmentService>();
 builder.Services.AddScoped<BorrowerService>();
 builder.Services.AddScoped<CheckoutService>();
+builder.Services.AddScoped<ReturnService>();
 
 var app = builder.Build();
 
