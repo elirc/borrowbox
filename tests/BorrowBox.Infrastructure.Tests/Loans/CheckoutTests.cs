@@ -44,4 +44,23 @@ public sealed class CheckoutTests
 
         Assert.Equal("borrower.inactive", error.Code);
     }
+
+    [Fact]
+    public async Task Return_ActiveLoan_MakesEquipmentAvailable()
+    {
+        var equipmentStore = new InMemoryEquipmentStore();
+        var borrowerStore = new InMemoryBorrowerStore();
+        var loanStore = new InMemoryLoanStore();
+        var equipment = new EquipmentItem(Guid.NewGuid(), "CAM-01", "Camera", "Media");
+        var borrower = new Borrower(Guid.NewGuid(), "S123", "Ada");
+        await equipmentStore.AddAsync(equipment, CancellationToken.None);
+        await borrowerStore.AddAsync(borrower, CancellationToken.None);
+        var loan = await new CheckoutService(equipmentStore, borrowerStore, loanStore)
+            .CheckOutAsync(equipment.Id, borrower.Id, new DateOnly(2026, 8, 1), CancellationToken.None);
+
+        await new ReturnService(equipmentStore, loanStore).ReturnAsync(loan.Id, new DateTimeOffset(2026, 7, 20, 10, 0, 0, TimeSpan.Zero), CancellationToken.None);
+
+        Assert.False(loan.IsActive);
+        Assert.Equal(EquipmentStatus.Available, equipment.Status);
+    }
 }

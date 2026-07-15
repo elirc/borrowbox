@@ -44,6 +44,8 @@ public sealed class EquipmentItem
         if (Status != EquipmentStatus.Available) throw new BorrowBoxException("equipment.not_available", "Equipment is not available.");
         Status = EquipmentStatus.CheckedOut;
     }
+
+    public void Return() => Status = EquipmentStatus.Available;
 }
 
 public interface IEquipmentStore

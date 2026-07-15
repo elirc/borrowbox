@@ -26,6 +26,8 @@ public sealed class Loan
     public DateOnly DueOn { get; }
     public DateTimeOffset? ReturnedAt { get; private set; }
     public bool IsActive => ReturnedAt is null;
+
+    public void Return(DateTimeOffset returnedAt) => ReturnedAt = returnedAt.ToUniversalTime();
 }
 
 public interface ILoanStore
@@ -47,6 +49,20 @@ public sealed class CheckoutService(IEquipmentStore equipmentStore, IBorrowerSto
         equipment.CheckOut();
         var loan = new Loan(Guid.NewGuid(), equipment.Id, borrower.Id, DateTimeOffset.UtcNow, dueOn);
         await loanStore.AddAsync(loan, cancellationToken).ConfigureAwait(false);
+        return loan;
+    }
+}
+
+public sealed class ReturnService(IEquipmentStore equipmentStore, ILoanStore loanStore)
+{
+    public async Task<Loan> ReturnAsync(Guid loanId, DateTimeOffset returnedAt, CancellationToken cancellationToken)
+    {
+        var loan = await loanStore.GetAsync(loanId, cancellationToken).ConfigureAwait(false)
+            ?? throw new BorrowBoxException("loan.not_found", "Loan was not found.");
+        var equipment = await equipmentStore.GetAsync(loan.EquipmentId, cancellationToken).ConfigureAwait(false)
+            ?? throw new BorrowBoxException("equipment.not_found", "Equipment was not found.");
+        loan.Return(returnedAt);
+        equipment.Return();
         return loan;
     }
 }
