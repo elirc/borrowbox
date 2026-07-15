@@ -84,4 +84,73 @@ public sealed class CheckoutTests
         Assert.Equal("borrower.loan_limit", error.Code);
         Assert.Equal(EquipmentStatus.Available, equipment.Status);
     }
+
+    [Fact]
+    public async Task Return_SameLoanTwice_IsRejected()
+    {
+        var equipmentStore = new InMemoryEquipmentStore();
+        var loanStore = new InMemoryLoanStore();
+        var equipment = new EquipmentItem(Guid.NewGuid(), "MIC-8", "Microphone", "Audio", EquipmentStatus.CheckedOut);
+        var loan = new Loan(Guid.NewGuid(), equipment.Id, Guid.NewGuid(), DateTimeOffset.UtcNow.AddDays(-1), new DateOnly(2099, 1, 1));
+        await equipmentStore.AddAsync(equipment, CancellationToken.None);
+        await loanStore.AddAsync(loan, CancellationToken.None);
+        var service = new ReturnService(equipmentStore, loanStore);
+        await service.ReturnAsync(loan.Id, DateTimeOffset.UtcNow, CancellationToken.None);
+
+        var error = await Assert.ThrowsAsync<BorrowBoxException>(() =>
+            service.ReturnAsync(loan.Id, DateTimeOffset.UtcNow, CancellationToken.None));
+
+        Assert.Equal("loan.already_returned", error.Code);
+    }
+
+    [Fact]
+    public async Task CheckOut_TwoCompetingRequests_OnlyOneSucceeds()
+    {
+        var equipment = new EquipmentItem(Guid.NewGuid(), "MIC-9", "Microphone", "Audio");
+        var equipmentStore = new RacingEquipmentStore(equipment);
+        var borrowerStore = new InMemoryBorrowerStore();
+        var loanStore = new InMemoryLoanStore();
+        var firstBorrower = new Borrower(Guid.NewGuid(), "S1", "First");
+        var secondBorrower = new Borrower(Guid.NewGuid(), "S2", "Second");
+        await borrowerStore.AddAsync(firstBorrower, CancellationToken.None);
+        await borrowerStore.AddAsync(secondBorrower, CancellationToken.None);
+        var service = new CheckoutService(equipmentStore, borrowerStore, loanStore, new BorrowerLoanPolicy(3));
+
+        var attempts = await Task.WhenAll(
+            Attempt(() => service.CheckOutAsync(equipment.Id, firstBorrower.Id, new DateOnly(2099, 1, 1), CancellationToken.None)),
+            Attempt(() => service.CheckOutAsync(equipment.Id, secondBorrower.Id, new DateOnly(2099, 1, 1), CancellationToken.None)));
+
+        Assert.Equal(1, attempts.Count(success => success));
+    }
+
+    private static async Task<bool> Attempt(Func<Task<Loan>> action)
+    {
+        try { await action(); return true; }
+        catch (BorrowBoxException) { return false; }
+    }
+
+    private sealed class RacingEquipmentStore(EquipmentItem source) : IEquipmentStore
+    {
+        private readonly TaskCompletionSource _bothReading = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _readers;
+        private int _checkoutWon;
+
+        public Task AddAsync(EquipmentItem item, CancellationToken cancellationToken) => Task.CompletedTask;
+        public async Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken)
+        {
+            if (Interlocked.Increment(ref _readers) == 2) _bothReading.SetResult();
+            await _bothReading.Task.WaitAsync(cancellationToken);
+            return new EquipmentItem(source.Id, source.AssetTag, source.Name, source.Category, source.Status);
+        }
+        public Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyCollection<EquipmentItem>>([source]);
+        public Task SaveAsync(EquipmentItem item, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<EquipmentItem?> TryCheckOutAsync(Guid id, CancellationToken cancellationToken)
+        {
+            if (Interlocked.Exchange(ref _checkoutWon, 1) == 1) return Task.FromResult<EquipmentItem?>(null);
+            var checkedOut = new EquipmentItem(source.Id, source.AssetTag, source.Name, source.Category);
+            checkedOut.CheckOut();
+            return Task.FromResult<EquipmentItem?>(checkedOut);
+        }
+    }
 }

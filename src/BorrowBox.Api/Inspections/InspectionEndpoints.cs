@@ -1,5 +1,5 @@
-using BorrowBox.Core.Inspections;
 using BorrowBox.Api.Security;
+using BorrowBox.Core.Inspections;
 
 namespace BorrowBox.Api.Inspections;
 

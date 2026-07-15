@@ -1,5 +1,5 @@
-using BorrowBox.Core.Equipment;
 using BorrowBox.Api.Security;
+using BorrowBox.Core.Equipment;
 
 namespace BorrowBox.Api.Equipment;
 

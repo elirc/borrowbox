@@ -35,6 +35,16 @@ public sealed class SqliteEquipmentStore(BorrowBoxDbContext dbContext) : IEquipm
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<EquipmentItem?> TryCheckOutAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var changed = await dbContext.Equipment
+            .Where(row => row.Id == id && row.Status == nameof(EquipmentStatus.Available))
+            .ExecuteUpdateAsync(update => update.SetProperty(
+                row => row.Status, nameof(EquipmentStatus.CheckedOut)), cancellationToken)
+            .ConfigureAwait(false);
+        return changed == 1 ? await GetAsync(id, cancellationToken).ConfigureAwait(false) : null;
+    }
+
     private static EquipmentRow ToRow(EquipmentItem item) => new()
     {
         Id = item.Id,

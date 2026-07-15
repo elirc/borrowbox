@@ -105,12 +105,12 @@ public sealed class ReservationService(
 
 public sealed class ReservationExpiryService(
     IReservationStore reservationStore,
-    IEquipmentStore equipmentStore)
+    IEquipmentStore equipmentStore,
+    IClock clock)
 {
     public async Task<int> ExpireDueAsync(CancellationToken cancellationToken)
     {
-        // Sprint 9 keeps time access simple. Sprint 14 will make this deterministic.
-        var now = DateTimeOffset.Now;
+        var now = clock.UtcNow;
         var reservations = await reservationStore.ListAsync(cancellationToken).ConfigureAwait(false);
         var expiredCount = 0;
 

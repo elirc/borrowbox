@@ -91,6 +91,7 @@ public interface IEquipmentStore
     Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken cancellationToken);
     Task SaveAsync(EquipmentItem item, CancellationToken cancellationToken);
+    Task<EquipmentItem?> TryCheckOutAsync(Guid id, CancellationToken cancellationToken);
 }
 
 public sealed record EquipmentPage(IReadOnlyCollection<EquipmentItem> Items, int Page, int PageSize, int Total);

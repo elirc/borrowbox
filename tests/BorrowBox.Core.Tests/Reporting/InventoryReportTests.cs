@@ -42,5 +42,6 @@ public sealed class InventoryReportTests
         public Task<EquipmentItem?> GetAsync(Guid id, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken cancellationToken) => Task.FromResult(items);
         public Task SaveAsync(EquipmentItem item, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<EquipmentItem?> TryCheckOutAsync(Guid id, CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 }
