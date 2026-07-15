@@ -2,12 +2,15 @@ using BorrowBox.Api.Borrowers;
 using BorrowBox.Api.Equipment;
 using BorrowBox.Api.Errors;
 using BorrowBox.Api.Loans;
+using BorrowBox.Api.Reservations;
 using BorrowBox.Core.Borrowers;
 using BorrowBox.Core.Equipment;
 using BorrowBox.Core.Loans;
+using BorrowBox.Core.Reservations;
 using BorrowBox.Infrastructure.Borrowers;
 using BorrowBox.Infrastructure.Equipment;
 using BorrowBox.Infrastructure.Loans;
+using BorrowBox.Infrastructure.Reservations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +20,12 @@ builder.Services.AddExceptionHandler<BorrowBoxExceptionHandler>();
 builder.Services.AddSingleton<IEquipmentStore, InMemoryEquipmentStore>();
 builder.Services.AddSingleton<IBorrowerStore, InMemoryBorrowerStore>();
 builder.Services.AddSingleton<ILoanStore, InMemoryLoanStore>();
+builder.Services.AddSingleton<IReservationStore, InMemoryReservationStore>();
 builder.Services.AddScoped<EquipmentService>();
 builder.Services.AddScoped<BorrowerService>();
 builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddScoped<ReturnService>();
+builder.Services.AddScoped<ReservationService>();
 
 var app = builder.Build();
 
@@ -30,6 +35,7 @@ app.MapGet("/health/live", () => Results.Ok(new { status = "healthy" }));
 app.MapEquipmentEndpoints();
 app.MapBorrowerEndpoints();
 app.MapLoanEndpoints();
+app.MapReservationEndpoints();
 
 app.Run();
 

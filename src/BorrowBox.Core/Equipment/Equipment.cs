@@ -46,6 +46,24 @@ public sealed class EquipmentItem
         Status = EquipmentStatus.CheckedOut;
     }
 
+    public void Reserve()
+    {
+        if (Status != EquipmentStatus.Available) throw new BorrowBoxException("equipment.not_available", "Equipment is not available.");
+        Status = EquipmentStatus.Reserved;
+    }
+
+    public void CollectReservation()
+    {
+        if (Status != EquipmentStatus.Reserved) throw new BorrowBoxException("equipment.not_reserved", "Equipment is not reserved.");
+        Status = EquipmentStatus.CheckedOut;
+    }
+
+    public void ReleaseReservation()
+    {
+        if (Status != EquipmentStatus.Reserved) throw new BorrowBoxException("equipment.not_reserved", "Equipment is not reserved.");
+        Status = EquipmentStatus.Available;
+    }
+
     public void Return() => Status = EquipmentStatus.Available;
 }
 
