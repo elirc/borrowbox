@@ -1,0 +1,102 @@
+using BorrowBox.Core.Common;
+using BorrowBox.Core.Equipment;
+using BorrowBox.Core.Inspections;
+using BorrowBox.Infrastructure.Equipment;
+using BorrowBox.Infrastructure.Inspections;
+
+var cases = new (string Name, Func<Task> Run)[]
+{
+    ("OBSERVATION blank damage changes equipment before rejection", BlankDamage),
+    ("OBSERVATION mismatched completion closes inspection before rejection", MismatchedCompletion),
+    ("CONTRACT Repair closes inspection and leaves equipment in Inspection", RepairOutcome),
+    ("OBSERVATION direct completion accepts time before opening", EarlyCompletion),
+    ("OBSERVATION direct completion accepts an unnamed enum value", UnnamedOutcome)
+};
+var failures = 0;
+foreach (var test in cases)
+{
+    try { await test.Run(); Console.WriteLine("PASS " + test.Name); }
+    catch (Exception error)
+    {
+        failures++;
+        Console.WriteLine("FAIL " + test.Name + ": " + error.GetType().Name + " " + error.Message);
+    }
+}
+Console.WriteLine($"{cases.Length - failures} passed; {failures} failed");
+return failures == 0 ? 0 : 1;
+
+static void Check(bool condition, string message)
+{
+    if (!condition) throw new InvalidOperationException(message);
+}
+
+static EquipmentItem Item() => new(Guid.NewGuid(), "LAB-INSPECT", "Inspection camera", "Media");
+
+static async Task BlankDamage()
+{
+    var equipment = new InMemoryEquipmentStore();
+    var inspections = new InMemoryInspectionStore();
+    var item = Item();
+    await equipment.AddAsync(item, CancellationToken.None);
+    try
+    {
+        await new InspectionService(equipment, inspections).ReportDamageAsync(item.Id, " ", CancellationToken.None);
+        throw new InvalidOperationException("Expected damage validation failure");
+    }
+    catch (BorrowBoxException error) { Check(error.Code == "inspection.damage_required", "Wrong rule"); }
+    Check(item.Status == EquipmentStatus.Inspection, "Expected current pre-validation equipment mutation");
+    Check((await inspections.ListAsync(CancellationToken.None)).Count == 0, "Invalid inspection inserted");
+}
+
+static async Task MismatchedCompletion()
+{
+    var equipment = new InMemoryEquipmentStore();
+    var inspections = new InMemoryInspectionStore();
+    var item = Item();
+    var inspection = new Inspection(Guid.NewGuid(), item.Id, "Cracked case",
+        new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero));
+    await equipment.AddAsync(item, CancellationToken.None);
+    await inspections.AddAsync(inspection, CancellationToken.None);
+    try
+    {
+        await new InspectionService(equipment, inspections).CompleteAsync(
+            inspection.Id, InspectionOutcome.Passed, "Reviewed", CancellationToken.None);
+        throw new InvalidOperationException("Expected equipment mismatch");
+    }
+    catch (BorrowBoxException error) { Check(error.Code == "equipment.not_in_inspection", "Wrong rule"); }
+    Check(!inspection.IsOpen && inspection.Outcome == InspectionOutcome.Passed,
+        "Expected current pre-equipment-check inspection mutation");
+    Check(inspection.CompletedAt is not null && inspection.ResolutionNotes == "Reviewed", "Incomplete observation");
+    Check(item.Status == EquipmentStatus.Available, "Mismatched equipment unexpectedly changed");
+}
+
+static async Task RepairOutcome()
+{
+    var equipment = new InMemoryEquipmentStore();
+    var inspections = new InMemoryInspectionStore();
+    var item = Item();
+    await equipment.AddAsync(item, CancellationToken.None);
+    var service = new InspectionService(equipment, inspections);
+    var inspection = await service.ReportDamageAsync(item.Id, "Cracked case", CancellationToken.None);
+    await service.CompleteAsync(inspection.Id, InspectionOutcome.Repair, "Repair required", CancellationToken.None);
+    Check(!inspection.IsOpen && inspection.Outcome == InspectionOutcome.Repair, "Inspection did not close");
+    Check(item.Status == EquipmentStatus.Inspection, "Repair unexpectedly released equipment");
+}
+
+static Task EarlyCompletion()
+{
+    var opened = new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero);
+    var inspection = new Inspection(Guid.NewGuid(), Guid.NewGuid(), "Cracked case", opened);
+    inspection.Complete(InspectionOutcome.Passed, "Reviewed", opened.AddMinutes(-1));
+    Check(inspection.CompletedAt == opened.AddMinutes(-1), "Current chronology observation changed");
+    return Task.CompletedTask;
+}
+
+static Task UnnamedOutcome()
+{
+    var opened = new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero);
+    var inspection = new Inspection(Guid.NewGuid(), Guid.NewGuid(), "Cracked case", opened);
+    inspection.Complete((InspectionOutcome)99, "Reviewed", opened.AddMinutes(1));
+    Check(!inspection.IsOpen && inspection.Outcome == (InspectionOutcome)99, "Current enum observation changed");
+    return Task.CompletedTask;
+}

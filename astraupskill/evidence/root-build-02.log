@@ -1,0 +1,12 @@
+  BorrowBox.Core -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Core\bin\Release\net10.0\BorrowBox.Core.dll
+  BorrowBox.Infrastructure -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Infrastructure\bin\Release\net10.0\BorrowBox.Infrastructure.dll
+  BorrowBox.Core.Tests -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll
+  BorrowBox.Api -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Api\bin\Release\net10.0\BorrowBox.Api.dll
+  BorrowBox.Infrastructure.Tests -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Infrastructure.Tests\bin\Release\net10.0\BorrowBox.Infrastructure.Tests.dll
+  BorrowBox.Api.Tests -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Api.Tests\bin\Release\net10.0\BorrowBox.Api.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:21.27

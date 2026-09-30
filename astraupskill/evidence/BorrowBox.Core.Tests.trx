@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="93c9bec9-6732-4e1e-855b-75bb55b6a2d9" name="Owner@DESKTOP-T0PFEUT 2026-09-12 15:42:04" runUser="DESKTOP-T0PFEUT\Owner" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-12T15:42:04.4018240-07:00" queuing="2026-09-12T15:42:04.4018250-07:00" start="2026-09-12T15:41:33.7573347-07:00" finish="2026-09-12T15:42:04.4839320-07:00" />
+  <TestSettings name="default" id="568ea0dc-9976-41e0-af36-b159726b4193">
+    <Deployment runDeploymentRoot="Owner_DESKTOP-T0PFEUT_2026-09-12_15_42_04" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="57c09637-99f5-44e6-b454-879e03a985d9" testId="fc6eeced-5517-f5ef-43a1-6594f56f92f3" testName="BorrowBox.Core.Tests.Equipment.EquipmentTests.Create_BlankName_ReturnsUsefulRuleCode" computerName="DESKTOP-T0PFEUT" duration="00:00:00.8705730" startTime="2026-09-12T15:42:01.7081731-07:00" endTime="2026-09-12T15:42:02.5090750-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="57c09637-99f5-44e6-b454-879e03a985d9" />
+    <UnitTestResult executionId="972cec42-e981-4fea-8355-21c87242d9ec" testId="56183b71-f9e8-e17d-c11a-9064198fbd6a" testName="BorrowBox.Core.Tests.Borrowers.BorrowerTests.Register_NormalizesCollegeIdAndStartsActive" computerName="DESKTOP-T0PFEUT" duration="00:00:00.9103219" startTime="2026-09-12T15:42:01.6929465-07:00" endTime="2026-09-12T15:42:02.4813827-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="972cec42-e981-4fea-8355-21c87242d9ec" />
+    <UnitTestResult executionId="1852fe9f-328c-4bcc-bdc5-0c8c8cdb789f" testId="2bd08f8b-3334-207f-dd2f-02d1d3a4f160" testName="BorrowBox.Core.Tests.Reporting.InventoryReportTests.Summary_GroupsByStatusAndCategory" computerName="DESKTOP-T0PFEUT" duration="00:00:00.0778664" startTime="2026-09-12T15:42:02.7682314-07:00" endTime="2026-09-12T15:42:02.8450294-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1852fe9f-328c-4bcc-bdc5-0c8c8cdb789f" />
+    <UnitTestResult executionId="36765fc3-b878-421e-b40c-2ca9891dc2bd" testId="212153ef-d00a-7a85-911a-a7f396eac487" testName="BorrowBox.Core.Tests.Equipment.EquipmentTests.Retire_AvailableItem_PreventsLaterEdits" computerName="DESKTOP-T0PFEUT" duration="00:00:00.0868659" startTime="2026-09-12T15:42:02.5668946-07:00" endTime="2026-09-12T15:42:02.5813614-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="36765fc3-b878-421e-b40c-2ca9891dc2bd" />
+    <UnitTestResult executionId="04eb0fb9-80cf-435c-8ef7-9490a3c6f9da" testId="d7509f5b-9d4b-26c4-ff2b-c09341451354" testName="BorrowBox.Core.Tests.Equipment.EquipmentTests.Create_NormalizesAssetTagAndStartsAvailable" computerName="DESKTOP-T0PFEUT" duration="00:00:00.0009736" startTime="2026-09-12T15:42:02.5824384-07:00" endTime="2026-09-12T15:42:02.5827762-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="04eb0fb9-80cf-435c-8ef7-9490a3c6f9da" />
+    <UnitTestResult executionId="688a6dd1-01ac-4e88-8fc8-91cf0fb00175" testId="b5ea8458-6889-819b-1a25-8ae5e39e1532" testName="BorrowBox.Core.Tests.Reporting.InventoryReportTests.ExportCsv_EscapesCommaAndQuote" computerName="DESKTOP-T0PFEUT" duration="00:00:01.0601021" startTime="2026-09-12T15:42:01.7089920-07:00" endTime="2026-09-12T15:42:02.7668925-07:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="688a6dd1-01ac-4e88-8fc8-91cf0fb00175" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="BorrowBox.Core.Tests.Borrowers.BorrowerTests.Register_NormalizesCollegeIdAndStartsActive" storage="c:\users\owner\desktop\astraorganized2\astra-remaining-improvements\stage\5426644ec395\tests\borrowbox.core.tests\bin\release\net10.0\borrowbox.core.tests.dll" id="56183b71-f9e8-e17d-c11a-9064198fbd6a">
+      <Execution id="972cec42-e981-4fea-8355-21c87242d9ec" />
+      <TestMethod codeBase="C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="BorrowBox.Core.Tests.Borrowers.BorrowerTests" name="Register_NormalizesCollegeIdAndStartsActive" />
+    </UnitTest>
+    <UnitTest name="BorrowBox.Core.Tests.Reporting.InventoryReportTests.ExportCsv_EscapesCommaAndQuote" storage="c:\users\owner\desktop\astraorganized2\astra-remaining-improvements\stage\5426644ec395\tests\borrowbox.core.tests\bin\release\net10.0\borrowbox.core.tests.dll" id="b5ea8458-6889-819b-1a25-8ae5e39e1532">
+      <Execution id="688a6dd1-01ac-4e88-8fc8-91cf0fb00175" />
+      <TestMethod codeBase="C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="BorrowBox.Core.Tests.Reporting.InventoryReportTests" name="ExportCsv_EscapesCommaAndQuote" />
+    </UnitTest>
+    <UnitTest name="BorrowBox.Core.Tests.Equipment.EquipmentTests.Create_NormalizesAssetTagAndStartsAvailable" storage="c:\users\owner\desktop\astraorganized2\astra-remaining-improvements\stage\5426644ec395\tests\borrowbox.core.tests\bin\release\net10.0\borrowbox.core.tests.dll" id="d7509f5b-9d4b-26c4-ff2b-c09341451354">
+      <Execution id="04eb0fb9-80cf-435c-8ef7-9490a3c6f9da" />
+      <TestMethod codeBase="C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="BorrowBox.Core.Tests.Equipment.EquipmentTests" name="Create_NormalizesAssetTagAndStartsAvailable" />
+    </UnitTest>
+    <UnitTest name="BorrowBox.Core.Tests.Equipment.EquipmentTests.Create_BlankName_ReturnsUsefulRuleCode" storage="c:\users\owner\desktop\astraorganized2\astra-remaining-improvements\stage\5426644ec395\tests\borrowbox.core.tests\bin\release\net10.0\borrowbox.core.tests.dll" id="fc6eeced-5517-f5ef-43a1-6594f56f92f3">
+      <Execution id="57c09637-99f5-44e6-b454-879e03a985d9" />
+      <TestMethod codeBase="C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="BorrowBox.Core.Tests.Equipment.EquipmentTests" name="Create_BlankName_ReturnsUsefulRuleCode" />
+    </UnitTest>
+    <UnitTest name="BorrowBox.Core.Tests.Equipment.EquipmentTests.Retire_AvailableItem_PreventsLaterEdits" storage="c:\users\owner\desktop\astraorganized2\astra-remaining-improvements\stage\5426644ec395\tests\borrowbox.core.tests\bin\release\net10.0\borrowbox.core.tests.dll" id="212153ef-d00a-7a85-911a-a7f396eac487">
+      <Execution id="36765fc3-b878-421e-b40c-2ca9891dc2bd" />
+      <TestMethod codeBase="C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="BorrowBox.Core.Tests.Equipment.EquipmentTests" name="Retire_AvailableItem_PreventsLaterEdits" />
+    </UnitTest>
+    <UnitTest name="BorrowBox.Core.Tests.Reporting.InventoryReportTests.Summary_GroupsByStatusAndCategory" storage="c:\users\owner\desktop\astraorganized2\astra-remaining-improvements\stage\5426644ec395\tests\borrowbox.core.tests\bin\release\net10.0\borrowbox.core.tests.dll" id="2bd08f8b-3334-207f-dd2f-02d1d3a4f160">
+      <Execution id="1852fe9f-328c-4bcc-bdc5-0c8c8cdb789f" />
+      <TestMethod codeBase="C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="BorrowBox.Core.Tests.Reporting.InventoryReportTests" name="Summary_GroupsByStatusAndCategory" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="fc6eeced-5517-f5ef-43a1-6594f56f92f3" executionId="57c09637-99f5-44e6-b454-879e03a985d9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="56183b71-f9e8-e17d-c11a-9064198fbd6a" executionId="972cec42-e981-4fea-8355-21c87242d9ec" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2bd08f8b-3334-207f-dd2f-02d1d3a4f160" executionId="1852fe9f-328c-4bcc-bdc5-0c8c8cdb789f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="212153ef-d00a-7a85-911a-a7f396eac487" executionId="36765fc3-b878-421e-b40c-2ca9891dc2bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d7509f5b-9d4b-26c4-ff2b-c09341451354" executionId="04eb0fb9-80cf-435c-8ef7-9490a3c6f9da" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b5ea8458-6889-819b-1a25-8ae5e39e1532" executionId="688a6dd1-01ac-4e88-8fc8-91cf0fb00175" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="6" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.02] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.10)&#xD;
+[xUnit.net 00:00:06.29]   Discovering: BorrowBox.Core.Tests&#xD;
+[xUnit.net 00:00:06.86]   Discovered:  BorrowBox.Core.Tests&#xD;
+[xUnit.net 00:00:07.15]   Starting:    BorrowBox.Core.Tests&#xD;
+[xUnit.net 00:00:08.72]   Finished:    BorrowBox.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

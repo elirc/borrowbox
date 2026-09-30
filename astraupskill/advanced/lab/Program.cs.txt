@@ -1,0 +1,102 @@
+using BorrowBox.Core.Borrowers;
+using BorrowBox.Core.Common;
+using BorrowBox.Core.Equipment;
+using BorrowBox.Core.Loans;
+using BorrowBox.Core.Reservations;
+using BorrowBox.Infrastructure.Borrowers;
+using BorrowBox.Infrastructure.Equipment;
+using BorrowBox.Infrastructure.Loans;
+using BorrowBox.Infrastructure.Reservations;
+
+var tests = new (string, Func<Task>)[] {
+    ("invalid expiry leaves equipment available", InvalidExpiry),
+    ("invalid due date leaves equipment available", InvalidDue),
+    ("return before checkout changes neither entity", InvalidReturn),
+    ("expiry equality transitions both states", ExpiryEquality),
+    ("OBSERVATION: add failure leaves checkout effect", PersistenceFailure),
+    ("OBSERVATION: separate items bypass borrower limit under interleaving", BorrowerRace)
+};
+var failed = 0;
+foreach (var (name, run) in tests) {
+    try { await run(); Console.WriteLine("PASS " + name); }
+    catch (Exception ex) { failed++; Console.WriteLine("FAIL " + name + ": " + ex.Message); }
+}
+Console.WriteLine($"{tests.Length-failed} passed; {failed} failed");
+return failed == 0 ? 0 : 1;
+
+static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
+static async Task Code(string expected, Func<Task> action) {
+    try { await action(); } catch (BorrowBoxException ex) { Check(ex.Code == expected, "unexpected domain code"); return; }
+    throw new Exception("expected domain rejection");
+}
+static DateTimeOffset At() => DateTimeOffset.Parse("2026-03-01T12:00:00Z");
+static async Task<(InMemoryEquipmentStore, InMemoryBorrowerStore, EquipmentItem, Borrower)> Setup() {
+    var equipment = new InMemoryEquipmentStore(); var borrowers = new InMemoryBorrowerStore();
+    var item = new EquipmentItem(Guid.NewGuid(), "LAB-1", "Camera", "Media");
+    var borrower = new Borrower(Guid.NewGuid(), "STUDENT-1", "Lab learner");
+    await equipment.AddAsync(item, default); await borrowers.AddAsync(borrower, default);
+    return (equipment, borrowers, item, borrower);
+}
+static async Task InvalidExpiry() {
+    var (equipment, borrowers, item, borrower) = await Setup(); var reservations = new InMemoryReservationStore();
+    var service = new ReservationService(equipment, borrowers, reservations, new FixedClock(At()));
+    await Code("reservation.expiry_invalid", () => service.ReserveAsync(item.Id, borrower.Id, At(), default));
+    Check((await equipment.GetAsync(item.Id, default))!.Status == EquipmentStatus.Available, "state leaked after validation");
+    Check((await reservations.ListAsync(default)).Count == 0, "reservation unexpectedly added");
+}
+static async Task InvalidDue() {
+    var (equipment, borrowers, item, borrower) = await Setup(); var loans = new InMemoryLoanStore();
+    var service = new CheckoutService(equipment, borrowers, loans, new BorrowerLoanPolicy(2), new FixedClock(At()));
+    await Code("loan.due_date_invalid", () => service.CheckOutAsync(item.Id, borrower.Id, new DateOnly(2026,2,28), default));
+    Check(item.Status == EquipmentStatus.Available, "checkout leaked after validation");
+    Check((await loans.ListActiveByBorrowerAsync(borrower.Id, default)).Count == 0, "loan unexpectedly added");
+}
+static async Task InvalidReturn() {
+    var (equipment, _, item, borrower) = await Setup(); item.CheckOut(); var loans = new InMemoryLoanStore();
+    var loan = new Loan(Guid.NewGuid(), item.Id, borrower.Id, At(), new DateOnly(2026,3,2)); await loans.AddAsync(loan, default);
+    await Code("loan.return_time_invalid", () => new ReturnService(equipment,loans).ReturnAsync(loan.Id,At().AddTicks(-1),default));
+    Check(loan.IsActive && item.Status == EquipmentStatus.CheckedOut, "return changed state");
+}
+static async Task ExpiryEquality() {
+    var (equipment, _, item, borrower) = await Setup(); item.Reserve(); var reservations = new InMemoryReservationStore();
+    var reservation = new Reservation(Guid.NewGuid(), item.Id, borrower.Id, At().AddHours(-1), At()); await reservations.AddAsync(reservation,default);
+    var count = await new ReservationExpiryService(reservations,equipment,new FixedClock(At())).ExpireDueAsync(default);
+    Check(count == 1 && reservation.Status == ReservationStatus.Expired && item.Status == EquipmentStatus.Available, "equality expiry wrong");
+}
+static async Task PersistenceFailure() {
+    var (equipment, borrowers, item, borrower) = await Setup(); var loans = new FailingLoanStore();
+    var service = new CheckoutService(equipment, borrowers, loans, new BorrowerLoanPolicy(2), new FixedClock(At()));
+    try { await service.CheckOutAsync(item.Id,borrower.Id,new DateOnly(2026,3,2),default); throw new Exception("failure injection missing"); }
+    catch (IOException) { }
+    Check(item.Status == EquipmentStatus.CheckedOut && loans.AddAttempts == 1, "expected existing nontransactional behavior");
+    Console.WriteLine("  Observed CheckedOut with zero recorded loans; this is a limitation, not a desired contract.");
+}
+static async Task BorrowerRace() {
+    var (equipment, borrowers, first, borrower) = await Setup();
+    var second = new EquipmentItem(Guid.NewGuid(),"LAB-2","Tripod","Media"); await equipment.AddAsync(second,default);
+    var loans = new InterleavedLoanStore();
+    var service = new CheckoutService(equipment,borrowers,loans,new BorrowerLoanPolicy(1),new FixedClock(At()));
+    await Task.WhenAll(service.CheckOutAsync(first.Id,borrower.Id,new DateOnly(2026,3,2),default),
+                       service.CheckOutAsync(second.Id,borrower.Id,new DateOnly(2026,3,2),default)).WaitAsync(TimeSpan.FromSeconds(5));
+    Check(loans.Count == 2, "expected deliberately forced borrower-limit race");
+    Console.WriteLine("  Both requests observed zero active loans before either added its loan.");
+}
+sealed class FixedClock(DateTimeOffset at) : IClock { public DateTimeOffset UtcNow => at; }
+sealed class FailingLoanStore : ILoanStore {
+    public int AddAttempts { get; private set; }
+    public Task AddAsync(Loan loan,CancellationToken token) { AddAttempts++; throw new IOException("injected before add"); }
+    public Task<Loan?> GetAsync(Guid id,CancellationToken token) => Task.FromResult<Loan?>(null);
+    public Task<IReadOnlyCollection<Loan>> ListActiveByBorrowerAsync(Guid id,CancellationToken token) => Task.FromResult<IReadOnlyCollection<Loan>>(Array.Empty<Loan>());
+}
+sealed class InterleavedLoanStore : ILoanStore {
+    readonly TaskCompletionSource ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    readonly System.Collections.Concurrent.ConcurrentDictionary<Guid,Loan> items = new(); int readers;
+    public int Count => items.Count;
+    public Task AddAsync(Loan loan,CancellationToken token) { items[loan.Id]=loan; return Task.CompletedTask; }
+    public Task<Loan?> GetAsync(Guid id,CancellationToken token) => Task.FromResult(items.TryGetValue(id,out var loan) ? loan : null);
+    public async Task<IReadOnlyCollection<Loan>> ListActiveByBorrowerAsync(Guid id,CancellationToken token) {
+        var captured = items.Values.Where(x=>x.BorrowerId==id && x.IsActive).ToArray();
+        if (Interlocked.Increment(ref readers)==2) ready.SetResult();
+        await ready.Task.WaitAsync(TimeSpan.FromSeconds(5),token); return captured;
+    }
+}

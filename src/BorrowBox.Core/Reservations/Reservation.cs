@@ -62,7 +62,8 @@ public interface IReservationStore
 public sealed class ReservationService(
     IEquipmentStore equipmentStore,
     IBorrowerStore borrowerStore,
-    IReservationStore reservationStore)
+    IReservationStore reservationStore,
+    IClock? clock = null)
 {
     public async Task<Reservation> ReserveAsync(Guid equipmentId, Guid borrowerId, DateTimeOffset expiresAt, CancellationToken cancellationToken)
     {
@@ -72,8 +73,8 @@ public sealed class ReservationService(
             ?? throw new BorrowBoxException("borrower.not_found", "Borrower was not found.");
         if (!borrower.IsActive) throw new BorrowBoxException("borrower.inactive", "Borrower is inactive.");
 
+        var reservation = new Reservation(Guid.NewGuid(), equipment.Id, borrower.Id, (clock ?? new SystemClock()).UtcNow, expiresAt);
         equipment.Reserve();
-        var reservation = new Reservation(Guid.NewGuid(), equipment.Id, borrower.Id, DateTimeOffset.UtcNow, expiresAt);
         await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);
         await reservationStore.AddAsync(reservation, cancellationToken).ConfigureAwait(false);
         return reservation;
@@ -83,6 +84,8 @@ public sealed class ReservationService(
     {
         var reservation = await GetActiveAsync(id, cancellationToken).ConfigureAwait(false);
         var equipment = await GetEquipmentAsync(reservation, cancellationToken).ConfigureAwait(false);
+        if (equipment.Status != EquipmentStatus.Reserved)
+            throw new BorrowBoxException("equipment.not_reserved", "Equipment is not reserved for this reservation.");
         reservation.Cancel();
         equipment.ReleaseReservation();
         await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);
@@ -118,7 +121,7 @@ public sealed class ReservationExpiryService(
                      item.Status == ReservationStatus.Active && item.ExpiresAt <= now))
         {
             var equipment = await equipmentStore.GetAsync(reservation.EquipmentId, cancellationToken).ConfigureAwait(false);
-            if (equipment is null) continue;
+            if (equipment is null || equipment.Status != EquipmentStatus.Reserved) continue;
             reservation.Expire();
             equipment.ReleaseReservation();
             await equipmentStore.SaveAsync(equipment, cancellationToken).ConfigureAwait(false);

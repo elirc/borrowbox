@@ -1,0 +1,183 @@
+using BorrowBox.Core.Borrowers;
+using BorrowBox.Core.Common;
+using BorrowBox.Core.Equipment;
+using BorrowBox.Core.Loans;
+using BorrowBox.Core.Reservations;
+using BorrowBox.Infrastructure.Borrowers;
+using BorrowBox.Infrastructure.Equipment;
+using BorrowBox.Infrastructure.Loans;
+
+var cases = new (string Name, Func<Task> Run)[]
+{
+    ("OBSERVATION equipment lookups and list members are live aliases", Aliases),
+    ("OBSERVATION direct Return can leave Retired", DirectReturn),
+    ("OBSERVATION failed reservation insertion leaves Reserved equipment", FailedReservationAdd),
+    ("OBSERVATION failed return save leaves both live entities mutated", FailedReturnSave),
+    ("CONTRACT reservation expiry equality rejects before mutation", ExpiryEquality),
+    ("CONTRACT return at checkout instant succeeds then duplicate rejects", ReturnEquality)
+};
+var failures = 0;
+foreach (var test in cases)
+{
+    try { await test.Run(); Console.WriteLine("PASS " + test.Name); }
+    catch (Exception error)
+    {
+        failures++;
+        Console.WriteLine("FAIL " + test.Name + ": " + error.GetType().Name + " " + error.Message);
+    }
+}
+Console.WriteLine($"{cases.Length - failures} passed; {failures} failed");
+return failures == 0 ? 0 : 1;
+
+static void Check(bool condition, string message)
+{
+    if (!condition) throw new InvalidOperationException(message);
+}
+
+static EquipmentItem Item(EquipmentStatus status = EquipmentStatus.Available) =>
+    new(Guid.NewGuid(), "LAB-CAM", "Lab camera", "Media", status);
+
+static async Task Aliases()
+{
+    var store = new InMemoryEquipmentStore();
+    var item = Item();
+    await store.AddAsync(item, CancellationToken.None);
+    var first = await store.GetAsync(item.Id, CancellationToken.None);
+    var list = await store.ListAsync(CancellationToken.None);
+    Check(ReferenceEquals(first, item), "Lookup unexpectedly cloned the item");
+    Check(ReferenceEquals(list.Single(), item), "List unexpectedly cloned its member");
+    item.Reserve();
+    Check(first!.Status == EquipmentStatus.Reserved, "Lookup alias did not observe mutation");
+    Check(list.Single().Status == EquipmentStatus.Reserved, "List member did not observe mutation");
+}
+
+static Task DirectReturn()
+{
+    var item = Item();
+    item.Retire();
+    item.Return();
+    Check(item.Status == EquipmentStatus.Available, "Direct Return behavior changed");
+    return Task.CompletedTask;
+}
+
+static async Task FailedReservationAdd()
+{
+    var equipment = new InMemoryEquipmentStore();
+    var borrowers = new InMemoryBorrowerStore();
+    var reservations = new BeforeAddFailure();
+    var item = Item();
+    var borrower = new Borrower(Guid.NewGuid(), "LAB-STUDENT", "Lab Student");
+    var now = new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero);
+    await equipment.AddAsync(item, CancellationToken.None);
+    await borrowers.AddAsync(borrower, CancellationToken.None);
+    try
+    {
+        await new ReservationService(equipment, borrowers, reservations, new FixedClock(now))
+            .ReserveAsync(item.Id, borrower.Id, now.AddHours(1), CancellationToken.None);
+        throw new InvalidOperationException("Expected designated add failure");
+    }
+    catch (InjectedFailure) { }
+    Check(reservations.AddAttempts == 1, "Wrong failure boundary");
+    Check(item.Status == EquipmentStatus.Reserved, "Original reference did not retain effect");
+    Check((await equipment.GetAsync(item.Id, CancellationToken.None))!.Status == EquipmentStatus.Reserved,
+        "Store lookup did not retain effect");
+    Check((await reservations.ListAsync(CancellationToken.None)).Count == 0, "Unexpected insertion");
+}
+
+static async Task FailedReturnSave()
+{
+    var equipment = new BeforeSaveFailure();
+    var loans = new InMemoryLoanStore();
+    var item = Item(EquipmentStatus.CheckedOut);
+    var now = new DateTimeOffset(2026, 3, 10, 10, 0, 0, TimeSpan.Zero);
+    var loan = new Loan(Guid.NewGuid(), item.Id, Guid.NewGuid(), now, new DateOnly(2026, 3, 20));
+    await equipment.AddAsync(item, CancellationToken.None);
+    await loans.AddAsync(loan, CancellationToken.None);
+    try
+    {
+        await new ReturnService(equipment, loans).ReturnAsync(loan.Id, now.AddHours(1), CancellationToken.None);
+        throw new InvalidOperationException("Expected designated save failure");
+    }
+    catch (InjectedFailure) { }
+    Check(equipment.SaveAttempts == 1, "Wrong failure boundary");
+    Check(!loan.IsActive && loan.ReturnedAt == now.AddHours(1), "Loan mutation was not observed");
+    Check(item.Status == EquipmentStatus.Available, "Equipment mutation was not observed");
+    Check(!(await loans.GetAsync(loan.Id, CancellationToken.None))!.IsActive, "Loan lookup differs");
+    Check((await equipment.GetAsync(item.Id, CancellationToken.None))!.Status == EquipmentStatus.Available,
+        "Equipment lookup differs");
+}
+
+static async Task ExpiryEquality()
+{
+    var equipment = new InMemoryEquipmentStore();
+    var borrowers = new InMemoryBorrowerStore();
+    var reservations = new BeforeAddFailure();
+    var item = Item();
+    var borrower = new Borrower(Guid.NewGuid(), "LAB-EQUAL", "Equality Student");
+    var now = new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero);
+    await equipment.AddAsync(item, CancellationToken.None);
+    await borrowers.AddAsync(borrower, CancellationToken.None);
+    try
+    {
+        await new ReservationService(equipment, borrowers, reservations, new FixedClock(now))
+            .ReserveAsync(item.Id, borrower.Id, now, CancellationToken.None);
+        throw new InvalidOperationException("Expected expiry rejection");
+    }
+    catch (BorrowBoxException error) { Check(error.Code == "reservation.expiry_invalid", "Wrong rule"); }
+    Check(item.Status == EquipmentStatus.Available, "Validation changed equipment");
+    Check(reservations.AddAttempts == 0, "Validation reached insertion");
+}
+
+static async Task ReturnEquality()
+{
+    var equipment = new InMemoryEquipmentStore();
+    var loans = new InMemoryLoanStore();
+    var item = Item(EquipmentStatus.CheckedOut);
+    var now = new DateTimeOffset(2026, 3, 10, 10, 0, 0, TimeSpan.Zero);
+    var loan = new Loan(Guid.NewGuid(), item.Id, Guid.NewGuid(), now, new DateOnly(2026, 3, 20));
+    await equipment.AddAsync(item, CancellationToken.None);
+    await loans.AddAsync(loan, CancellationToken.None);
+    var service = new ReturnService(equipment, loans);
+    await service.ReturnAsync(loan.Id, now, CancellationToken.None);
+    Check(loan.ReturnedAt == now && !loan.IsActive, "Equal return instant did not succeed");
+    Check(item.Status == EquipmentStatus.Available, "Return did not release equipment");
+    try
+    {
+        await service.ReturnAsync(loan.Id, now, CancellationToken.None);
+        throw new InvalidOperationException("Expected duplicate rejection");
+    }
+    catch (BorrowBoxException error) { Check(error.Code == "loan.already_returned", "Wrong duplicate rule"); }
+}
+
+sealed record FixedClock(DateTimeOffset UtcNow) : IClock;
+sealed class InjectedFailure : Exception;
+
+sealed class BeforeAddFailure : IReservationStore
+{
+    public int AddAttempts { get; private set; }
+    public Task AddAsync(Reservation item, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        AddAttempts++;
+        throw new InjectedFailure();
+    }
+    public Task<Reservation?> GetAsync(Guid id, CancellationToken token) => Task.FromResult<Reservation?>(null);
+    public Task<IReadOnlyCollection<Reservation>> ListAsync(CancellationToken token) =>
+        Task.FromResult<IReadOnlyCollection<Reservation>>(Array.Empty<Reservation>());
+}
+
+sealed class BeforeSaveFailure : IEquipmentStore
+{
+    private readonly InMemoryEquipmentStore inner = new();
+    public int SaveAttempts { get; private set; }
+    public Task AddAsync(EquipmentItem item, CancellationToken token) => inner.AddAsync(item, token);
+    public Task<EquipmentItem?> GetAsync(Guid id, CancellationToken token) => inner.GetAsync(id, token);
+    public Task<IReadOnlyCollection<EquipmentItem>> ListAsync(CancellationToken token) => inner.ListAsync(token);
+    public Task<EquipmentItem?> TryCheckOutAsync(Guid id, CancellationToken token) => inner.TryCheckOutAsync(id, token);
+    public Task SaveAsync(EquipmentItem item, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        SaveAttempts++;
+        throw new InjectedFailure();
+    }
+}

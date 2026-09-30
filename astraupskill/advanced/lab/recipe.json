@@ -1,0 +1,30 @@
+{
+  "sources": [
+    "src/BorrowBox.Core/Borrowers/Borrower.cs",
+    "src/BorrowBox.Core/Common/BorrowBoxException.cs",
+    "src/BorrowBox.Core/Common/Time.cs",
+    "src/BorrowBox.Core/Equipment/Equipment.cs",
+    "src/BorrowBox.Core/Inspections/Inspection.cs",
+    "src/BorrowBox.Core/Loans/Loan.cs",
+    "src/BorrowBox.Core/Reporting/InventoryReportService.cs",
+    "src/BorrowBox.Core/Reservations/Reservation.cs",
+    "src/BorrowBox.Infrastructure/Borrowers/InMemoryBorrowerStore.cs",
+    "src/BorrowBox.Infrastructure/Equipment/InMemoryEquipmentStore.cs",
+    "src/BorrowBox.Infrastructure/Loans/InMemoryLoanStore.cs",
+    "src/BorrowBox.Infrastructure/Reservations/InMemoryReservationStore.cs"
+  ],
+  "edits": [
+    {
+      "path": "src/BorrowBox.Core/Reservations/Reservation.cs",
+      "before": "        var reservation = new Reservation(Guid.NewGuid(), equipment.Id, borrower.Id, (clock ?? new SystemClock()).UtcNow, expiresAt);\n        equipment.Reserve();",
+      "after": "        equipment.Reserve(); // LAB DEFECT: observable mutation before fallible validation\n        var reservation = new Reservation(Guid.NewGuid(), equipment.Id, borrower.Id, (clock ?? new SystemClock()).UtcNow, expiresAt);",
+      "purpose": "Mutate reservation equipment before validating expiry"
+    },
+    {
+      "path": "src/BorrowBox.Core/Loans/Loan.cs",
+      "before": "        var loan = new Loan(Guid.NewGuid(), equipment.Id, borrower.Id, checkedOutAt, dueOn);\n        equipment = await equipmentStore.TryCheckOutAsync(equipmentId, cancellationToken).ConfigureAwait(false)\n            ?? throw new BorrowBoxException(\"equipment.not_available\", \"Equipment is not available.\");",
+      "after": "        equipment = await equipmentStore.TryCheckOutAsync(equipmentId, cancellationToken).ConfigureAwait(false)\n            ?? throw new BorrowBoxException(\"equipment.not_available\", \"Equipment is not available.\");\n        var loan = new Loan(Guid.NewGuid(), equipment.Id, borrower.Id, checkedOutAt, dueOn); // LAB DEFECT",
+      "purpose": "Check out equipment before validating due date"
+    }
+  ]
+}

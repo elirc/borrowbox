@@ -1,0 +1,21 @@
+{
+  "project": "borrowbox",
+  "id": "5426644ec395",
+  "command": [
+    "dotnet",
+    "restore",
+    "BorrowBox.slnx"
+  ],
+  "cwd": "C:\\Users\\Owner\\Desktop\\AstraOrganized2\\astra-remaining-improvements\\stage\\5426644ec395",
+  "environmentOverrides": {
+    "DOTNET_ROLL_FORWARD": "Major"
+  },
+  "startedAt": "2026-09-12T22:38:33.985583+00:00",
+  "status": "complete",
+  "log": "luna-restore-01.log",
+  "pid": 37152,
+  "exitCode": 0,
+  "passed": true,
+  "finishedAt": "2026-09-12T22:39:22.150522+00:00",
+  "elapsedSeconds": 48.16
+}

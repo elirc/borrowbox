@@ -1,0 +1,28 @@
+{
+  "project": "borrowbox",
+  "id": "5426644ec395",
+  "command": [
+    "dotnet",
+    "test",
+    "BorrowBox.slnx",
+    "--configuration",
+    "Release",
+    "--no-restore",
+    "--logger",
+    "trx;LogFileName=borrowbox-luna-test-04.trx",
+    "--logger",
+    "console;verbosity=normal"
+  ],
+  "cwd": "C:\\Users\\Owner\\Desktop\\AstraOrganized2\\astra-remaining-improvements\\stage\\5426644ec395",
+  "environmentOverrides": {
+    "DOTNET_ROLL_FORWARD": "Major"
+  },
+  "startedAt": "2026-09-12T22:39:30.279236+00:00",
+  "status": "complete",
+  "log": "luna-test-04.log",
+  "pid": 32304,
+  "exitCode": 0,
+  "passed": true,
+  "finishedAt": "2026-09-12T22:44:29.965008+00:00",
+  "elapsedSeconds": 299.25
+}

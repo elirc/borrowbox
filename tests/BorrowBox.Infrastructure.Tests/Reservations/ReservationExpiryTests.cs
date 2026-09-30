@@ -50,5 +50,26 @@ public sealed class ReservationExpiryTests
         Assert.Equal(1, await service.ExpireDueAsync(CancellationToken.None));
     }
 
+    [Fact]
+    public async Task ExpireDue_MismatchedEquipment_DoesNotChangeReservation()
+    {
+        var equipmentStore = new InMemoryEquipmentStore();
+        var reservationStore = new InMemoryReservationStore();
+        var equipment = new EquipmentItem(Guid.NewGuid(), "LAP-10", "Laptop", "Computing");
+        var reservation = new Reservation(Guid.NewGuid(), equipment.Id, Guid.NewGuid(),
+            new DateTimeOffset(2026, 1, 2, 9, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero));
+        await equipmentStore.AddAsync(equipment, CancellationToken.None);
+        await reservationStore.AddAsync(reservation, CancellationToken.None);
+
+        var count = await new ReservationExpiryService(reservationStore, equipmentStore,
+            new FakeClock(new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero)))
+            .ExpireDueAsync(CancellationToken.None);
+
+        Assert.Equal(0, count);
+        Assert.Equal(ReservationStatus.Active, reservation.Status);
+        Assert.Equal(EquipmentStatus.Available, equipment.Status);
+    }
+
     private sealed record FakeClock(DateTimeOffset UtcNow) : IClock;
 }

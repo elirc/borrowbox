@@ -21,8 +21,9 @@ public sealed class CheckoutTests
         await equipmentStore.AddAsync(equipment, CancellationToken.None);
         await borrowerStore.AddAsync(borrower, CancellationToken.None);
 
-        var loan = await new CheckoutService(equipmentStore, borrowerStore, loanStore, new BorrowerLoanPolicy(3))
-            .CheckOutAsync(equipment.Id, borrower.Id, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)), CancellationToken.None);
+        var loan = await new CheckoutService(equipmentStore, borrowerStore, loanStore, new BorrowerLoanPolicy(3),
+            new FixedClock(new DateTimeOffset(2026, 1, 2, 10, 0, 0, TimeSpan.Zero)))
+            .CheckOutAsync(equipment.Id, borrower.Id, new DateOnly(2099, 1, 1), CancellationToken.None);
 
         Assert.True(loan.IsActive);
         Assert.Equal(EquipmentStatus.CheckedOut, equipment.Status);
@@ -55,7 +56,8 @@ public sealed class CheckoutTests
         var borrower = new Borrower(Guid.NewGuid(), "S123", "Ada");
         await equipmentStore.AddAsync(equipment, CancellationToken.None);
         await borrowerStore.AddAsync(borrower, CancellationToken.None);
-        var loan = await new CheckoutService(equipmentStore, borrowerStore, loanStore, new BorrowerLoanPolicy(3))
+        var loan = await new CheckoutService(equipmentStore, borrowerStore, loanStore, new BorrowerLoanPolicy(3),
+            new FixedClock(new DateTimeOffset(2026, 7, 1, 10, 0, 0, TimeSpan.Zero)))
             .CheckOutAsync(equipment.Id, borrower.Id, new DateOnly(2026, 8, 1), CancellationToken.None);
 
         await new ReturnService(equipmentStore, loanStore).ReturnAsync(loan.Id, new DateTimeOffset(2026, 7, 20, 10, 0, 0, TimeSpan.Zero), CancellationToken.None);
@@ -123,6 +125,45 @@ public sealed class CheckoutTests
         Assert.Equal(1, attempts.Count(success => success));
     }
 
+    [Fact]
+    public async Task InvalidDueDate_DoesNotCheckOutEquipment()
+    {
+        var equipmentStore = new InMemoryEquipmentStore();
+        var borrowerStore = new InMemoryBorrowerStore();
+        var loanStore = new InMemoryLoanStore();
+        var equipment = new EquipmentItem(Guid.NewGuid(), "CAM-10", "Camera", "Media");
+        var borrower = new Borrower(Guid.NewGuid(), "S500", "Riley");
+        await equipmentStore.AddAsync(equipment, CancellationToken.None);
+        await borrowerStore.AddAsync(borrower, CancellationToken.None);
+        var service = new CheckoutService(equipmentStore, borrowerStore, loanStore, new BorrowerLoanPolicy(3),
+            new FixedClock(new DateTimeOffset(2026, 2, 10, 10, 0, 0, TimeSpan.Zero)));
+
+        await Assert.ThrowsAsync<BorrowBoxException>(() => service.CheckOutAsync(
+            equipment.Id, borrower.Id, new DateOnly(2026, 2, 9), CancellationToken.None));
+
+        Assert.Equal(EquipmentStatus.Available, equipment.Status);
+        Assert.Empty(await loanStore.ListActiveByBorrowerAsync(borrower.Id, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ReturnBeforeCheckout_DoesNotChangeEitherEntity()
+    {
+        var equipmentStore = new InMemoryEquipmentStore();
+        var loanStore = new InMemoryLoanStore();
+        var equipment = new EquipmentItem(Guid.NewGuid(), "MIC-11", "Microphone", "Audio", EquipmentStatus.CheckedOut);
+        var checkedOutAt = new DateTimeOffset(2026, 3, 10, 10, 0, 0, TimeSpan.Zero);
+        var loan = new Loan(Guid.NewGuid(), equipment.Id, Guid.NewGuid(), checkedOutAt, new DateOnly(2026, 3, 20));
+        await equipmentStore.AddAsync(equipment, CancellationToken.None);
+        await loanStore.AddAsync(loan, CancellationToken.None);
+
+        await Assert.ThrowsAsync<BorrowBoxException>(() => new ReturnService(equipmentStore, loanStore)
+            .ReturnAsync(loan.Id, checkedOutAt.AddMinutes(-1), CancellationToken.None));
+
+        Assert.True(loan.IsActive);
+        Assert.Null(loan.ReturnedAt);
+        Assert.Equal(EquipmentStatus.CheckedOut, equipment.Status);
+    }
+
     private static async Task<bool> Attempt(Func<Task<Loan>> action)
     {
         try { await action(); return true; }
@@ -153,4 +194,6 @@ public sealed class CheckoutTests
             return Task.FromResult<EquipmentItem?>(checkedOut);
         }
     }
+
+    private sealed record FixedClock(DateTimeOffset UtcNow) : IClock;
 }

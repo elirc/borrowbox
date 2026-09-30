@@ -1,0 +1,23 @@
+{
+  "project": "borrowbox",
+  "id": "5426644ec395",
+  "command": [
+    "C:/Program Files/dotnet/dotnet.exe",
+    "build",
+    "BorrowBox.slnx",
+    "--configuration",
+    "Release",
+    "--no-restore",
+    "--disable-build-servers"
+  ],
+  "cwd": "C:\\Users\\Owner\\Desktop\\AstraOrganized2\\astra-remaining-improvements\\stage\\5426644ec395",
+  "environmentOverrides": {},
+  "startedAt": "2026-09-12T22:54:05.174042+00:00",
+  "status": "complete",
+  "log": "root-build-02.log",
+  "pid": 27668,
+  "exitCode": 0,
+  "passed": true,
+  "finishedAt": "2026-09-12T22:55:34.584362+00:00",
+  "elapsedSeconds": 89.4
+}

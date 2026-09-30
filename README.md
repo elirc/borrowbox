@@ -52,3 +52,8 @@ dotnet list BorrowBox.slnx package --vulnerable --include-transitive
 ```
 
 The default API store is intentionally non-durable. The SQLite adapter and integration test demonstrate persistence without making local setup harder.
+
+
+## Lifecycle learning course
+
+Read the [nine-chapter CRUD engineering course](astraupskill/README.md) for validation ordering, time boundaries, complete tests, exercises and verified limits.

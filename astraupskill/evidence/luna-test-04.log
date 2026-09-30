@@ -1,0 +1,110 @@
+  BorrowBox.Core -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Core\bin\Release\net10.0\BorrowBox.Core.dll
+  BorrowBox.Infrastructure -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Infrastructure\bin\Release\net10.0\BorrowBox.Infrastructure.dll
+  BorrowBox.Core.Tests -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll
+Test run for C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\bin\Release\net10.0\BorrowBox.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.02] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.10)
+  BorrowBox.Api -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Api\bin\Release\net10.0\BorrowBox.Api.dll
+[xUnit.net 00:00:06.29]   Discovering: BorrowBox.Core.Tests
+[xUnit.net 00:00:06.86]   Discovered:  BorrowBox.Core.Tests
+[xUnit.net 00:00:07.15]   Starting:    BorrowBox.Core.Tests
+[xUnit.net 00:00:08.72]   Finished:    BorrowBox.Core.Tests
+  Passed BorrowBox.Core.Tests.Equipment.EquipmentTests.Create_BlankName_ReturnsUsefulRuleCode [870 ms]
+  Passed BorrowBox.Core.Tests.Borrowers.BorrowerTests.Register_NormalizesCollegeIdAndStartsActive [910 ms]
+  Passed BorrowBox.Core.Tests.Equipment.EquipmentTests.Retire_AvailableItem_PreventsLaterEdits [86 ms]
+  Passed BorrowBox.Core.Tests.Equipment.EquipmentTests.Create_NormalizesAssetTagAndStartsAvailable [< 1 ms]
+  Passed BorrowBox.Core.Tests.Reporting.InventoryReportTests.ExportCsv_EscapesCommaAndQuote [1 s]
+  Passed BorrowBox.Core.Tests.Reporting.InventoryReportTests.Summary_GroupsByStatusAndCategory [77 ms]
+Results File: C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Core.Tests\TestResults\borrowbox-luna-test-04.trx
+
+Test Run Successful.
+Total tests: 6
+     Passed: 6
+ Total time: 30.1880 Seconds
+  BorrowBox.Infrastructure.Tests -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Infrastructure.Tests\bin\Release\net10.0\BorrowBox.Infrastructure.Tests.dll
+Test run for C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Infrastructure.Tests\bin\Release\net10.0\BorrowBox.Infrastructure.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.02] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.10)
+[xUnit.net 00:00:04.12]   Discovering: BorrowBox.Infrastructure.Tests
+[xUnit.net 00:00:05.32]   Discovered:  BorrowBox.Infrastructure.Tests
+[xUnit.net 00:00:05.64]   Starting:    BorrowBox.Infrastructure.Tests
+  Passed BorrowBox.Infrastructure.Tests.Inspections.InspectionTests.Complete_AppliesOutcomeToEquipment(outcome: Passed, expectedStatus: Available) [958 ms]
+  Passed BorrowBox.Infrastructure.Tests.Reservations.ReservationExpiryTests.ExpireDue_ReleasesReservedEquipment [906 ms]
+  Passed BorrowBox.Infrastructure.Tests.Inspections.InspectionTests.Complete_AppliesOutcomeToEquipment(outcome: Retired, expectedStatus: Retired) [6 ms]
+  Passed BorrowBox.Infrastructure.Tests.Reservations.ReservationExpiryTests.ExpireDue_MismatchedEquipment_DoesNotChangeReservation [4 ms]
+  Passed BorrowBox.Infrastructure.Tests.Inspections.InspectionTests.Complete_AppliesOutcomeToEquipment(outcome: Repair, expectedStatus: Inspection) [< 1 ms]
+  Passed BorrowBox.Infrastructure.Tests.Reservations.ReservationExpiryTests.ExpireDue_UsesInjectedUtcClock [3 ms]
+  Passed BorrowBox.Infrastructure.Tests.Reservations.ReservationTests.Cancel_ReleasesEquipment [817 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.Return_ActiveLoan_MakesEquipmentAvailable [1 s]
+  Passed BorrowBox.Infrastructure.Tests.Equipment.EquipmentSearchTests.Search_FiltersThenPaginatesInAssetTagOrder [826 ms]
+  Passed BorrowBox.Infrastructure.Tests.Reservations.ReservationTests.Cancel_MismatchedEquipment_DoesNotChangeReservation [16 ms]
+  Passed BorrowBox.Infrastructure.Tests.Reservations.ReservationTests.InvalidExpiry_DoesNotReserveEquipment [7 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.InvalidDueDate_DoesNotCheckOutEquipment [89 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.ReturnBeforeCheckout_DoesNotChangeEitherEntity [12 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.CheckOut_TwoCompetingRequests_OnlyOneSucceeds [559 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.CheckOut_AtBorrowerLimit_RejectsNewLoan [6 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.Return_SameLoanTwice_IsRejected [9 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.CheckOut_InactiveBorrower_RejectsRule [83 ms]
+  Passed BorrowBox.Infrastructure.Tests.Loans.CheckoutTests.CheckOut_AvailableEquipment_CreatesActiveLoan [4 ms]
+[xUnit.net 00:00:33.10]   Finished:    BorrowBox.Infrastructure.Tests
+  Passed BorrowBox.Infrastructure.Tests.Equipment.SqliteEquipmentStoreTests.Save_PersistsChangesAcrossContexts [27 s]
+Results File: C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Infrastructure.Tests\TestResults\borrowbox-luna-test-04.trx
+
+Test Run Successful.
+Total tests: 19
+     Passed: 19
+ Total time: 43.7594 Seconds
+  BorrowBox.Api.Tests -> C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Api.Tests\bin\Release\net10.0\BorrowBox.Api.Tests.dll
+Test run for C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Api.Tests\bin\Release\net10.0\BorrowBox.Api.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.02] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.10)
+[xUnit.net 00:00:06.22]   Discovering: BorrowBox.Api.Tests
+[xUnit.net 00:00:07.03]   Discovered:  BorrowBox.Api.Tests
+[xUnit.net 00:00:07.31]   Starting:    BorrowBox.Api.Tests
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Api
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Api
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Api
+info: BorrowBox.Api.Security.DemoHeaderAuthenticationHandler[12]
+      AuthenticationScheme: DemoHeader was challenged.
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+  Passed BorrowBox.Api.Tests.Equipment.EquipmentApiTests.CreateThenGet_ReturnsEquipment [7 s]
+  Passed BorrowBox.Api.Tests.Security.AuthorizationTests.Retire_WithoutIdentity_ReturnsUnauthorized [7 s]
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\src\BorrowBox.Api
+info: BorrowBox.Api.Security.DemoHeaderAuthenticationHandler[13]
+      AuthenticationScheme: DemoHeader was forbidden.
+  Passed BorrowBox.Api.Tests.Operations.HealthTests.Ready_ExplainsNonDurableDefault_AndReturnsCorrelationId [7 s]
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[xUnit.net 00:00:18.54]   Finished:    BorrowBox.Api.Tests
+  Passed BorrowBox.Api.Tests.Security.AuthorizationTests.Retire_StudentRole_ReturnsForbidden [2 s]
+Results File: C:\Users\Owner\Desktop\AstraOrganized2\astra-remaining-improvements\stage\5426644ec395\tests\BorrowBox.Api.Tests\TestResults\borrowbox-luna-test-04.trx
+
+Test Run Successful.
+Total tests: 4
+     Passed: 4
+ Total time: 35.2403 Seconds

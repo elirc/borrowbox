@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "total": 29,
+  "tests": 29,
+  "failed": 0,
+  "suites": [
+    {
+      "suite": "BorrowBox.Infrastructure.Tests",
+      "tests": 19,
+      "evidence": "astraupskill/evidence/BorrowBox.Infrastructure.Tests.trx"
+    },
+    {
+      "suite": "BorrowBox.Core.Tests",
+      "tests": 6,
+      "evidence": "astraupskill/evidence/BorrowBox.Core.Tests.trx"
+    },
+    {
+      "suite": "BorrowBox.Api.Tests",
+      "tests": 4,
+      "evidence": "astraupskill/evidence/BorrowBox.Api.Tests.trx"
+    }
+  ],
+  "checks": [
+    "luna-restore-01",
+    "luna-test-04",
+    "root-build-02"
+  ],
+  "scope": "6 Core,19 Infrastructure and4 in-process API tests; in-memory stores and existing fake race seam. Full Release build passed. No durable database transaction, production authentication or browser test."
+}

@@ -17,7 +17,7 @@ public static class LoanEndpoints
         }).WithTags("Loans").RequireAuthorization();
         endpoints.MapPost("/api/v1/loans/{id:guid}/return", async (Guid id, ReturnService service, CancellationToken cancellationToken) =>
         {
-            var loan = await service.ReturnAsync(id, DateTimeOffset.UtcNow, cancellationToken);
+            var loan = await service.ReturnAsync(id, cancellationToken);
             return Results.Ok(new LoanResponse(loan.Id, loan.EquipmentId, loan.BorrowerId, loan.CheckedOutAt, loan.DueOn, loan.IsActive));
         }).WithTags("Loans").RequireAuthorization();
         return endpoints;
